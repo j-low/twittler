@@ -6,22 +6,67 @@
   </head>
   <body>
     <script>
-
+	  var visitor = "joemama";
+	  	
       $(document).ready(function(){
-        var $body = $('body');
-        $body.html('');
+	    
+        var $tweets = $('div.tweets');
+		var $sendButton = $('button.send');
+		var $inputField = $('input.draft');
+		var $refreshButton = $('button.refresh');
+		
+		
+		var Timer = setInterval(function() { RefreshList() }, 10000);
+	
+		var RefreshList = function(){	
+		  var index = streams.home.length - 1;
+		  while(index >= 0){
+            var tweet = streams.home[index];
+			//setup format here
+            var $tweet = $('<div></div>');
+            $tweet.text('@' + tweet.user + ': ' + tweet.message + " [" + tweet.created_at + "]");
+            $tweet.appendTo($tweets);
+            index -= 1;
+          }
+		};
+		
+		//listen for click event on 'sendButton' and post new tweet from 'visitor'
+		$sendButton.on('click', function(event) {
+			event.preventDefault();
+			var userTweet = {
+			  user: visitor,
+			  message: $inputField.val(),
+			  created_at: new Date()
+			  };
+			  
+			writeTweet(userTweet);
+			$inputField.val('');
+		}); 
 
-        var index = streams.home.length - 1;
-        while(index >= 0){
-          var tweet = streams.home[index];
-          var $tweet = $('<div></div>');
-          $tweet.text('@' + tweet.user + ': ' + tweet.message);
-          $tweet.appendTo($body);
-          index -= 1;
-        }
+		//listen for 'Enter' keypress on 'inputField' to trigger click on 'sendButton'
+		$inputField.on('keypress', function(event) {
+			if(event.keyCode === 13) {
+				event.preventDefault();
+				$sendButton.trigger('click');
+			}
+		});
 
+		//listen for click event on 'freshButton' and trigger RefreshList()
+		$refreshButton.on('click', function(event) {
+			event.preventDefault();
+			RefreshList();
+		}); 		
+		
+		RefreshList();
       });
 
     </script>
+	<h2>Dirk Twittler</h2>
+	<form>
+		<input class="draft" type="text"/> <button class="send" >Post Tweet!</button> 
+		<button class="refresh">Refresh Tweets</button>
+	</form>
+	<div class="tweets" ></div>
+	
   </body>
 </html>
