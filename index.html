@@ -3,10 +3,12 @@
   <head>
     <script src="jquery.js"></script>
     <script src="data_generator.js"></script>
+	<script src="http://timeago.yarp.com/jquery.timeago.js"></script>
   </head>
   <body>
     <script>
 	  var visitor = "joemama";
+	  streams.users.joemama = [];
 	  	
       $(document).ready(function(){
 	    
@@ -16,19 +18,31 @@
 		var $refreshButton = $('button.refresh');
 		
 		
-		var Timer = setInterval(function() { RefreshList() }, 10000);
+		var Timer = setInterval(function() { RefreshList(streams.home) }, 10000);
 	
-		var RefreshList = function(){	
-		  var index = streams.home.length - 1;
+		var RefreshList = function(collection){
+		  $tweets.empty();  
+		  var index = collection.length - 1;
 		  while(index >= 0){
-            var tweet = streams.home[index];
-			//setup format here
-            var $tweet = $('<div></div>');
-            $tweet.text('@' + tweet.user + ': ' + tweet.message + " [" + tweet.created_at + "]");
+            var tweet = collection[index];
+            var $tweet = $('<div class=tweet></div>');
+			$tweet.attr('id', tweet.user);
+			var $userHead = $('<h3 class=userHead></h3>').text('@' + tweet.user + ': ').appendTo($tweet);
+			var $message = $('<p class=message></p>').text(tweet.message + '\n').appendTo($tweet);
+			var $timestamp = $('<p class=timestamp></p>').text('[ ' + tweet.created_at + ' ]').appendTo($tweet);			
             $tweet.appendTo($tweets);
             index -= 1;
+			
+			//listen for click on tweet and trigger RefreshList(streams.users[user])
+		  $('.tweet').on('click', function(event) {
+			  event.preventDefault();
+			  //console.log(this);
+			  RefreshList(streams.users[$(this).attr('id')], true);
+		  });
           }
 		};
+		
+		
 		
 		//listen for click event on 'sendButton' and post new tweet from 'visitor'
 		$sendButton.on('click', function(event) {
@@ -40,6 +54,7 @@
 			  };
 			  
 			writeTweet(userTweet);
+			RefreshList(streams.home);
 			$inputField.val('');
 		}); 
 
@@ -50,15 +65,17 @@
 				$sendButton.trigger('click');
 			}
 		});
-
-		//listen for click event on 'freshButton' and trigger RefreshList()
+		
+		//listen for click event on 'freshButton' and trigger RefreshList(streams.home)
 		$refreshButton.on('click', function(event) {
 			event.preventDefault();
-			RefreshList();
-		}); 		
+			RefreshList(streams.home);
+		});
 		
-		RefreshList();
+		RefreshList(streams.home);
       });
+	  
+	  
 
     </script>
 	<h2>Twittler</h2>
